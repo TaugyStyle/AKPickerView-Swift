@@ -75,7 +75,6 @@ private class AKCollectionViewCell: UICollectionViewCell {
 		self.layer.rasterizationScale = UIScreen.main.scale
 
 		self.label = UILabel(frame: self.contentView.bounds)
-		self.label.backgroundColor = UIColor.clear
 		self.label.textAlignment = .center
 		self.label.textColor = UIColor.gray
 		self.label.numberOfLines = 1
@@ -138,7 +137,7 @@ private class AKCollectionViewLayout: UICollectionViewFlowLayout {
 		let visibleRect = CGRect(origin: self.collectionView!.contentOffset, size: self.collectionView!.bounds.size)
 		self.midX = visibleRect.midX;
 		self.width = visibleRect.width / 2;
-		self.maxAngle = CGFloat(M_PI_2);
+		self.maxAngle = CGFloat(Double.pi);
 	}
 
 	fileprivate override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
@@ -152,7 +151,7 @@ private class AKCollectionViewLayout: UICollectionViewFlowLayout {
 				return attributes
 			case .wheel:
 				let distance = attributes.frame.midX - self.midX;
-				let currentAngle = self.maxAngle * distance / self.width / CGFloat(M_PI_2);
+				let currentAngle = self.maxAngle * distance / self.width / CGFloat(Double.pi);
 				var transform = CATransform3DIdentity;
 				transform = CATransform3DTranslate(transform, -distance, 0, -self.width);
 				transform = CATransform3DRotate(transform, currentAngle, 0, 1, 0);
@@ -238,16 +237,22 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 		}
 	}
 	/// Readwrite. A font which used in NOT selected cells.
-	public lazy var font = UIFont.systemFont(ofSize: 20)
+    @IBInspectable public lazy var font: UIFont = UIFont.systemFont(ofSize: 20)
 
 	/// Readwrite. A font which used in selected cells.
-	public lazy var highlightedFont = UIFont.boldSystemFont(ofSize: 20)
+    @IBInspectable public lazy var highlightedFont: UIFont = UIFont.boldSystemFont(ofSize: 20)
 
 	/// Readwrite. A color of the text on NOT selected cells.
 	@IBInspectable public lazy var textColor: UIColor = UIColor.darkGray
 
 	/// Readwrite. A color of the text on selected cells.
 	@IBInspectable public lazy var highlightedTextColor: UIColor = UIColor.black
+
+    /// Readwrite. A background color of the text on selected cells.
+    @IBInspectable public lazy var highlightedBackgroundColor: UIColor = UIColor.clear
+
+    /// Readwrite. A float value which indicates the corner radius of the text on selected cells.
+    @IBInspectable public lazy var highlightedCornerRadius: CGFloat = 0.0
 
 	/// Readwrite. A float value which indicates the spacing between cells.
 	@IBInspectable public var interitemSpacing: CGFloat = 0.0
@@ -266,7 +271,7 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 		}
 	}
 	/// Readwrite. A boolean value indicates whether the mask is disabled.
-	@IBInspectable public var maskDisabled: Bool! = nil {
+	@IBInspectable public var maskDisabled: Bool = false {
 		didSet {
 			self.collectionView.layer.mask = self.maskDisabled == true ? nil : {
 				let maskLayer = CAGradientLayer()
@@ -327,7 +332,7 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 		self.intercepter = AKPickerViewDelegateIntercepter(pickerView: self, delegate: self.delegate)
 		self.collectionView.delegate = self.intercepter
 
-		self.maskDisabled = self.maskDisabled == nil ? false : self.maskDisabled
+		self.maskDisabled = self.maskDisabled == false ? false : self.maskDisabled
 	}
 
 	public init() {
@@ -373,8 +378,8 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 	:returns: A CGSize which contains given string just.
 	*/
 	fileprivate func sizeForString(_ string: NSString) -> CGSize {
-		let size = string.size(attributes: [NSFontAttributeName: self.font])
-		let highlightedSize = string.size(attributes: [NSFontAttributeName: self.highlightedFont])
+		let size = string.size(withAttributes: [NSAttributedStringKey.font: self.font])
+		let highlightedSize = string.size(withAttributes: [NSAttributedStringKey.font: self.highlightedFont])
 		return CGSize(
 			width: ceil(max(size.width, highlightedSize.width)),
 			height: ceil(max(size.height, highlightedSize.height)))
@@ -521,6 +526,8 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 			cell.label.text = title
 			cell.label.textColor = self.textColor
 			cell.label.highlightedTextColor = self.highlightedTextColor
+            cell.label.backgroundColor = self.highlightedBackgroundColor
+            cell.label.layer.cornerRadius = self.highlightedCornerRadius
 			cell.label.font = self.font
 			cell.font = self.font
 			cell.highlightedFont = self.highlightedFont
@@ -604,4 +611,3 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 	}
 
 }
-
