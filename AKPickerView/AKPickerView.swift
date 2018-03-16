@@ -38,7 +38,7 @@ and customize the appearance of labels.
 @objc public protocol AKPickerViewDelegate: UIScrollViewDelegate {
 	@objc optional func pickerView(_ pickerView: AKPickerView, didSelectItem item: Int)
 	@objc optional func pickerView(_ pickerView: AKPickerView, marginForItem item: Int) -> CGSize
-	@objc optional func pickerView(_ pickerView: AKPickerView, configureLabel label: UILabel, forItem item: Int)
+    @objc optional func pickerView(_ pickerView: AKPickerView, configureLabel label: UILabel, forItem item: Int)
 }
 
 // MARK: - Private Classes and Protocols
@@ -60,6 +60,7 @@ private class AKCollectionViewCell: UICollectionViewCell {
 	var font = UIFont.systemFont(ofSize: UIFont.systemFontSize)
 	var highlightedFont = UIFont.systemFont(ofSize: UIFont.systemFontSize)
     var highlightedBackgroundColor: UIColor = UIColor.clear
+
     override var isSelected: Bool {
 		didSet(isSelected) {
 			let animation = CATransition()
@@ -69,9 +70,9 @@ private class AKCollectionViewCell: UICollectionViewCell {
 			self.label.font = self.isSelected ? self.highlightedFont : self.font
 
             if self.isSelected {
-                self.label.backgroundColor = highlightedBackgroundColor
+                self.backgroundColor = highlightedBackgroundColor
             } else {
-                self.label.backgroundColor = UIColor.clear
+                self.backgroundColor = UIColor.clear
             }
 		}
 	}
@@ -80,6 +81,7 @@ private class AKCollectionViewCell: UICollectionViewCell {
 		self.layer.isDoubleSided = false
 		self.layer.shouldRasterize = true
 		self.layer.rasterizationScale = UIScreen.main.scale
+        self.layer.masksToBounds = true
 
 		self.label = UILabel(frame: self.contentView.bounds)
 		self.label.backgroundColor = UIColor.clear
@@ -258,6 +260,9 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 
     /// Readwrite. A color of the background on selected cells.
     @IBInspectable public lazy var highlightedBackgroundColor: UIColor = UIColor.clear
+
+    /// Readwrite. A float value which indicates the corner radius of highlighted cells.
+    @IBInspectable public lazy var highlightedCornerRadius: CGFloat = 0.0
 
 	/// Readwrite. A float value which indicates the spacing between cells.
 	@IBInspectable public var interitemSpacing: CGFloat = 0.0
@@ -532,12 +537,13 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 			cell.label.textColor = self.textColor
 			cell.label.highlightedTextColor = self.highlightedTextColor
             cell.highlightedBackgroundColor = self.highlightedBackgroundColor
+            cell.layer.cornerRadius = self.highlightedCornerRadius
 			cell.label.font = self.font
 			cell.font = self.font
 			cell.highlightedFont = self.highlightedFont
 			cell.label.bounds = CGRect(origin: CGPoint.zero, size: self.sizeForString(title as NSString))
 			if let delegate = self.delegate {
-				delegate.pickerView?(self, configureLabel: cell.label, forItem: indexPath.item)
+                delegate.pickerView?(self, configureLabel: cell.label, forItem: indexPath.item)
 				if let margin = delegate.pickerView?(self, marginForItem: indexPath.item) {
 					cell.label.frame = cell.label.frame.insetBy(dx: -margin.width, dy: -margin.height)
 				}
@@ -545,7 +551,6 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 		} else if let image = self.dataSource?.pickerView?(self, imageForItem: indexPath.item) {
 			cell.imageView.image = image
 		}
-		//cell._selected = (indexPath.item == self.selectedItem)
         cell.isSelected = (indexPath.item == self.selectedItem)
 		return cell
 	}
