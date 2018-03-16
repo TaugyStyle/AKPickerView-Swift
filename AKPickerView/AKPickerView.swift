@@ -75,6 +75,7 @@ private class AKCollectionViewCell: UICollectionViewCell {
 		self.layer.rasterizationScale = UIScreen.main.scale
 
 		self.label = UILabel(frame: self.contentView.bounds)
+		self.label.backgroundColor = UIColor.clear
 		self.label.textAlignment = .center
 		self.label.textColor = UIColor.gray
 		self.label.numberOfLines = 1
