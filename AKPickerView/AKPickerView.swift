@@ -59,13 +59,20 @@ private class AKCollectionViewCell: UICollectionViewCell {
 	var imageView: UIImageView!
 	var font = UIFont.systemFont(ofSize: UIFont.systemFontSize)
 	var highlightedFont = UIFont.systemFont(ofSize: UIFont.systemFontSize)
-	var _selected: Bool = false {
-		didSet(selected) {
+    var highlightedBackgroundColor: UIColor = UIColor.clear
+    override var isSelected: Bool {
+		didSet(isSelected) {
 			let animation = CATransition()
 			animation.type = kCATransitionFade
 			animation.duration = 0.15
 			self.label.layer.add(animation, forKey: "")
 			self.label.font = self.isSelected ? self.highlightedFont : self.font
+
+            if self.isSelected {
+                self.label.backgroundColor = highlightedBackgroundColor
+            } else {
+                self.label.backgroundColor = UIColor.clear
+            }
 		}
 	}
 
@@ -249,11 +256,8 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 	/// Readwrite. A color of the text on selected cells.
 	@IBInspectable public lazy var highlightedTextColor: UIColor = UIColor.black
 
-    /// Readwrite. A background color of the text on selected cells.
+    /// Readwrite. A color of the background on selected cells.
     @IBInspectable public lazy var highlightedBackgroundColor: UIColor = UIColor.clear
-
-    /// Readwrite. A float value which indicates the corner radius of the text on selected cells.
-    @IBInspectable public lazy var highlightedCornerRadius: CGFloat = 0.0
 
 	/// Readwrite. A float value which indicates the spacing between cells.
 	@IBInspectable public var interitemSpacing: CGFloat = 0.0
@@ -527,8 +531,7 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 			cell.label.text = title
 			cell.label.textColor = self.textColor
 			cell.label.highlightedTextColor = self.highlightedTextColor
-            cell.label.backgroundColor = self.highlightedBackgroundColor
-            cell.label.layer.cornerRadius = self.highlightedCornerRadius
+            cell.highlightedBackgroundColor = self.highlightedBackgroundColor
 			cell.label.font = self.font
 			cell.font = self.font
 			cell.highlightedFont = self.highlightedFont
@@ -542,7 +545,8 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 		} else if let image = self.dataSource?.pickerView?(self, imageForItem: indexPath.item) {
 			cell.imageView.image = image
 		}
-		cell._selected = (indexPath.item == self.selectedItem)
+		//cell._selected = (indexPath.item == self.selectedItem)
+        cell.isSelected = (indexPath.item == self.selectedItem)
 		return cell
 	}
 
